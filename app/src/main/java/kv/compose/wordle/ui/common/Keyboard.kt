@@ -7,8 +7,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,7 +24,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kv.compose.wordle.data.game.CharacterState
+import kv.compose.wordle.data.game.Keyboard
 import kv.compose.wordle.ui.theme.WordleComposeTheme
+import kv.compose.wordle.ui.theme.isSystemInDarkTheme
 import kv.compose.wordle.ui.theme.keyBg
 import kv.compose.wordle.ui.theme.keyBgAbsent
 import kv.compose.wordle.ui.theme.keyBgCorrect
@@ -42,212 +46,203 @@ fun CharacterState.keyForegroundColor(): Color = when (this) {
     else -> keyEvaluatedTextColor
 }
 
+@Preview
 @Composable
-fun KeyboardBox(
-    modifier: Modifier = Modifier,
-    enabled: Boolean,
-    onKey: (char: Char) -> Unit = {},
-    onBackspace: () -> Unit = {},
-    onEnter: () -> Unit = {},
-    keysList: List<List<Char>>
-) {
+fun KeyboardPreviewLightMode() {
+    isSystemInDarkTheme = false
 
+    WordleKeyboard(
+        keyboard = Keyboard(),
+        onKey = {},
+        onBackspace = {},
+        onEnter = {},
+        enabled = true,
+    )
+}
+
+@Preview
+@Composable
+fun KeyboardPreviewDarkMode() {
+    isSystemInDarkTheme = true
+
+    WordleKeyboard(
+        keyboard = Keyboard(),
+        onKey = {},
+        onBackspace = {},
+        onEnter = {},
+        enabled = true,
+    )
+}
+
+
+@Composable
+fun WordleKeyboard(
+    keyboard: Keyboard,
+    enabled: Boolean,
+    onKey: (char: Char) -> Unit,
+    onBackspace: () -> Unit,
+    onEnter: () -> Unit,
+) {
+    val keys = keyboard.keys.keys.zip(keyboard.keys.values)
 
     Box(
         contentAlignment = Alignment.Center,
-        modifier = modifier
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            KeyboardRow(keys = keysList[0], onKey = {
-                onKey(it)
-            }, enabled = enabled)
-            KeyboardRow(keys = keysList[1], onKey = {
-                onKey(it)
-            }, enabled = enabled)
-            Row(
-                horizontalArrangement = Arrangement.SpaceAround
-            ) {
-                KeyboardElementSpecial(
+            Row(horizontalArrangement = Arrangement.SpaceAround) {
+                for (index in 0..9) {
+                    val (letter, state) = keys[index]
+                    Key(enabled = enabled, letter = letter, state = state, onClick = onKey)
+                }
+            }
+
+            Row(horizontalArrangement = Arrangement.SpaceAround) {
+                for (index in 10..18) {
+                    val (letter, state) = keys[index]
+                    Key(enabled = enabled, letter = letter, state = state, onClick = onKey)
+                }
+            }
+
+            Row(horizontalArrangement = Arrangement.SpaceAround) {
+                SpecialKey(
                     string = "ENTER",
-                    enabled = true,
+                    enabled = enabled,
                     state = CharacterState.Unknown,
-                    onClick = {
-                        onEnter()
-                    },
-                    textStyle = MaterialTheme.typography.bodySmall
+                    onClick = onEnter,
+                    textStyle = MaterialTheme.typography.bodyMedium
                 )
-                KeyboardRow(keys = keysList[2], onKey = {
-                    onKey(it)
-                }, enabled = enabled)
-                KeyboardElementSpecial(
+
+                for (index in 19..25) {
+                    val (letter, state) = keys[index]
+                    Key(enabled = enabled, letter = letter, state = state, onClick = onKey)
+                }
+
+                SpecialKey(
                     string = "⌫",
-                    enabled = true,
+                    enabled = enabled,
                     state = CharacterState.Unknown,
-                    onClick = {
-                        onBackspace()
-                    },
-                    textStyle = MaterialTheme.typography.bodySmall
+                    onClick = onBackspace,
+                    textStyle = MaterialTheme.typography.bodyMedium,
                 )
             }
         }
     }
 }
 
+@Preview
 @Composable
-fun KeyboardRow(
-    modifier: Modifier = Modifier,
-    keys: List<Char>,
-    onKey: (char: Char) -> Unit = {},
-    enabled: Boolean
-) {
-    Row(
-        horizontalArrangement = Arrangement.SpaceAround,
-        modifier = modifier
-    ) {
-        for (key in keys) {
-            KeyboardElement(letter = key,
-                state = CharacterState.Unknown,
-                onClick = {
-                    onKey(it)
-                }, enabled = enabled
-            )
-        }
+fun KeyPreviewLightMode() {
+    isSystemInDarkTheme = false
+
+    Row {
+        Key(letter = 'L', state = CharacterState.Correct)
+        Key(letter = 'G', state = CharacterState.Present)
+        Key(letter = 'H', state = CharacterState.Absent)
+        Key(letter = 'T', state = CharacterState.Unknown)
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFFF5F0EE)
+@Preview
 @Composable
-fun KeyboardElementPreview() {
-    WordleComposeTheme(darkTheme = false, highContrast = false) {
-        Row(
-            Modifier.padding(8.dp)
-        ) {
-            KeyboardElement(
-                letter = 'A',
-                state = CharacterState.Correct
-            )
-            KeyboardElement(
-                letter = 'B',
-                state = CharacterState.Present
-            )
-            KeyboardElement(
-                letter = 'C',
-                state = CharacterState.Absent
-            )
-            KeyboardElement(
-                letter = 'D',
-                state = CharacterState.Unknown
-            )
-            KeyboardElementSpecial(
-                string = "⌫",
-                state = CharacterState.Unknown,
-                textStyle = MaterialTheme.typography.bodyLarge
-            )
-            KeyboardElementSpecial(
-                string = "ENTER",
-                state = CharacterState.Unknown
-            )
-        }
+fun KeyPreviewDarkMode() {
+    isSystemInDarkTheme = true
+
+    Row {
+        Key(letter = 'D', state = CharacterState.Correct)
+        Key(letter = 'A', state = CharacterState.Present)
+        Key(letter = 'R', state = CharacterState.Absent)
+        Key(letter = 'K', state = CharacterState.Unknown)
     }
 }
 
 @Composable
-fun KeyboardElement(
-    modifier: Modifier = Modifier,
-    letter: Char,
+fun Key(
     enabled: Boolean = true,
+    letter: Char,
     state: CharacterState,
-    onClick: (char: Char) -> Unit = {}
+    onClick: (char: Char) -> Unit = {},
 ) {
-
     val backgroundColor by animateColorAsState(state.keyBackgroundColor())
     val foregroundColor by animateColorAsState(state.keyForegroundColor())
 
     Box(
         contentAlignment = Alignment.Center,
-        modifier = modifier
-            .size(36.dp, height = 48.dp)
-            .padding(2.dp)
+        modifier = Modifier
+            .size(width = 36.dp, height = 48.dp)
+            .padding(horizontal = 2.dp, vertical = 2.dp)
             .clip(MaterialTheme.shapes.small)
             .background(backgroundColor)
-            .clickable(enabled) {
-                onClick(letter)
-            }
+            .clickable(enabled = enabled) { onClick(letter) },
     ) {
         Text(
-            text = letter.toString(),
+            letter.toString(),
             color = foregroundColor,
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.Bold,
-            modifier = modifier
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Bold
         )
     }
 }
 
+@Preview
 @Composable
-fun KeyboardElementSpecial(
-    modifier: Modifier = Modifier,
-    string: String,
+fun SpecialKeyPreviewLightMode() {
+    isSystemInDarkTheme = false
+
+    Row {
+        SpecialKey(
+            string = "⌫",
+            state = CharacterState.Unknown,
+            onClick = {},
+            textStyle = MaterialTheme.typography.bodyMedium
+        )
+        SpecialKey(string = "ENTER", state = CharacterState.Unknown, onClick = {})
+    }
+}
+
+@Preview
+@Composable
+fun SpecialKeyPreviewDarkMode() {
+    isSystemInDarkTheme = true
+
+    Row {
+        SpecialKey(
+            string = "⌫",
+            state = CharacterState.Unknown,
+            onClick = {},
+            textStyle = MaterialTheme.typography.bodyMedium
+        )
+        SpecialKey(string = "ENTER", state = CharacterState.Unknown, onClick = {})
+    }
+}
+
+@Composable
+fun SpecialKey(
     enabled: Boolean = true,
+    string: String,
     state: CharacterState,
     onClick: () -> Unit = {},
-    textStyle: TextStyle = MaterialTheme.typography.bodySmall
+    textStyle: TextStyle = MaterialTheme.typography.bodyMedium,
 ) {
-
     val backgroundColor by animateColorAsState(state.keyBackgroundColor())
     val foregroundColor by animateColorAsState(state.keyForegroundColor())
 
     Box(
         contentAlignment = Alignment.Center,
-        modifier = modifier
-            .size(60.dp, height = 48.dp)
-            .padding(2.dp)
+        modifier = Modifier
+            .width(width = 60.dp)
+            .height(height = 48.dp)
+            .padding(horizontal = 2.dp, vertical = 2.dp)
             .clip(MaterialTheme.shapes.small)
             .background(backgroundColor)
-            .clickable(enabled) {
-                onClick()
-            }
+            .clickable(enabled = enabled) { onClick() },
     ) {
         Text(
-            text = string,
+            string,
             color = foregroundColor,
             style = textStyle,
-            fontWeight = FontWeight.Bold,
-            modifier = modifier,
-        )
-    }
-}
-
-
-@Preview(showBackground = true, backgroundColor = 0xFFF5F0EE)
-@Composable
-fun KeyboardBoxPreview() {
-    WordleComposeTheme(darkTheme = false, highContrast = false) {
-        KeyboardBox(
-            modifier = Modifier.padding(8.dp),
-            keysList = listOf(
-                listOf('Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'),
-                listOf('A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'),
-                listOf('Z', 'X', 'C', 'V', 'B', 'N', 'M')
-            ),
-            enabled = true,
-            onKey = { },
-            onBackspace = { },
-            onEnter = {}
-        )
-    }
-}
-
-@Preview(showBackground = true, backgroundColor = 0xFFF5F0EE)
-@Composable
-fun KeyboardRowPreview() {
-    WordleComposeTheme(darkTheme = false, highContrast = false) {
-        KeyboardRow(
-            modifier = Modifier.padding(8.dp),
-            listOf('Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'),
-            onKey = {}, enabled = true
+            fontWeight = FontWeight.Bold
         )
     }
 }

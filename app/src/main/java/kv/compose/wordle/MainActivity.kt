@@ -11,40 +11,22 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import kv.compose.wordle.ui.game.WordleGameScreen
 import kv.compose.wordle.ui.theme.WordleComposeTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val wordList: List<String> = assets.open("word_list.txt")
+            .bufferedReader()
+            .use { it.readText() }
+            .split("\n")
+        val wordOfTheDay = wordList.random()
+
         setContent {
-            WordleComposeTheme(
-                darkTheme = isSystemInDarkTheme(),
-                highContrast = false
-            ) {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    Greeting("Android")
-                }
-            }
+            WordleGameScreen(wordList = wordList, wordOfTheDay = wordOfTheDay)
         }
     }
 }
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    WordleComposeTheme(false, false) {
-        Greeting("Android")
-    }
-}
